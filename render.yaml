@@ -1,0 +1,30 @@
+databases:
+  - name: vqi-georgia-db
+    plan: free
+    databaseName: vqi_georgia
+    user: vqi
+
+services:
+  - type: web
+    name: vqi-georgia
+    runtime: python
+    plan: free
+    buildCommand: |
+      cd backend && pip install -r requirements.txt &&
+      cd ../frontend && npm install && npm run build &&
+      mkdir -p ../backend/static &&
+      cp -r dist/* ../backend/static/
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vqi-georgia-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+      - key: NODE_VERSION
+        value: "20"
